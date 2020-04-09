@@ -36,13 +36,18 @@ def agg_features(path):
     features_list = []
     
     for col in ['event_type', 'user_defined_event_type', 'mcc_group']:
-        features = tr_history[['user_id', 'event_type', 'amount_original']].groupby(['user_id', 'event_type']).agg(
+        get = ['user_id', col, 'amount_original']
+        by = ['user_id', col]
+        features = tr_history[get].groupby(by).agg(
         ['count','mean']).unstack(level=-1, fill_value=0)
         
-        cols = features.columns
+        cols = [' '.join([col, i, j]) for _,i,j in features.columns]
+        features.columns = cols
         
         distr_features = pd.concat([row_scaling(features[cols[:len(cols)//2]]),
                                     row_scaling(features[cols[len(cols)//2:]])], axis = 1)
+        
+        distr_features.columns = [" ".join([c,"distr"]) for c in distr_features.columns]
         
         features_list.append(features)
         features_list.append(distr_features)
